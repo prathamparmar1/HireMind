@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
 from app.models import job, candidate
-from app.routes import job_routes, resume_routes
+from app.routes import job_routes, resume_routes, processing_routes
 
 app = FastAPI(title="HireMind AI")
 
@@ -19,6 +19,7 @@ Base.metadata.create_all(bind=engine)
 
 app.include_router(job_routes.router)
 app.include_router(resume_routes.router)
+app.include_router(processing_routes.router)
 
 @app.get("/")
 def root():
