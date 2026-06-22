@@ -5,7 +5,9 @@ import json
 
 from app.database import get_db
 from app.models.candidate import Candidate
+from app.models.job import Job
 from app.agents.extraction_agent import extract_candidate_info
+from app.agents.matching_agent import match_candidate_to_job
 from app.schemas import CandidateResponse
 
 router = APIRouter(prefix="/processing", tags=["Processing"])
@@ -31,6 +33,50 @@ def extract_candidates(job_id: int, db: Session = Depends(get_db)):
         candidate.extracted_experience = info.get("experience_years")
         candidate.extracted_projects = json.dumps(info.get("projects", []))
         candidate.extracted_education = info.get("education")
+
+        processed.append(candidate)
+
+    db.commit()
+
+    for candidate in processed:
+        db.refresh(candidate)
+
+    return processed
+
+
+@router.post("/match/{job_id}", response_model=List[CandidateResponse])
+def match_candidates(job_id: int, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    candidates = db.query(Candidate).filter(
+        Candidate.job_id == job_id,
+        Candidate.extracted_skills.isnot(None),
+        Candidate.match_score.is_(None)
+    ).all()
+
+    if not candidates:
+        raise HTTPException(status_code=404, detail="No candidates ready for matching. Run extraction first.")
+
+    processed = []
+
+    for candidate in candidates:
+        candidate_data = {
+            "skills": json.loads(candidate.extracted_skills or "[]"),
+            "experience": candidate.extracted_experience,
+            "projects": json.loads(candidate.extracted_projects or "[]"),
+            "education": candidate.extracted_education,
+            "companies": []
+        }
+
+        result = match_candidate_to_job(job.description, job.required_skills, candidate_data)
+
+        candidate.match_score = result.get("match_score", 0)
+        candidate.match_reasons = json.dumps({
+            "reasons": result.get("reasons", []),
+            "missing_skills": result.get("missing_skills", [])
+        })
 
         processed.append(candidate)
 
