@@ -86,7 +86,8 @@ def match_candidates(job_id: int, db: Session = Depends(get_db)):
                 "companies": []
             }
 
-            result = match_candidate_to_job(job.description, job.required_skills, candidate_data)
+            job_context = job.description if job.description else f"{job.title} role requiring: {job.required_skills}"
+            result = match_candidate_to_job(job_context, job.required_skills, candidate_data)
 
             candidate.match_score = result.get("match_score", 0)
             candidate.match_reasons = json.dumps({

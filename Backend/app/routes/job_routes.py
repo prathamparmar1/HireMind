@@ -12,9 +12,19 @@ router = APIRouter(prefix="/jobs", tags=["Jobs"])
 def create_job(job_data: JobCreate, db: Session = Depends(get_db)):
     new_job = Job(
         title=job_data.title,
-        description=job_data.description,
+        location=job_data.location,
+        work_mode=job_data.work_mode,
+        employment_type=job_data.employment_type,
+        min_experience=job_data.min_experience,
+        max_experience=job_data.max_experience,
         required_skills=job_data.required_skills,
-        location=job_data.location
+        preferred_skills=job_data.preferred_skills,
+        education_requirement=job_data.education_requirement,
+        salary_min=job_data.salary_min,
+        salary_max=job_data.salary_max,
+        openings=job_data.openings,
+        description=job_data.description,
+        application_deadline=job_data.application_deadline
     )
     db.add(new_job)
     db.commit()

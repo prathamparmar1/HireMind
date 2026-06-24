@@ -1,19 +1,39 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 
 class JobCreate(BaseModel):
     title: str
-    description: str
+    location: str
+    work_mode: str
+    employment_type: str
+    min_experience: float
+    max_experience: float
     required_skills: str
-    location: Optional[str] = None
+    preferred_skills: Optional[str] = None
+    education_requirement: Optional[str] = None
+    salary_min: Optional[float] = None
+    salary_max: Optional[float] = None
+    openings: Optional[int] = None
+    description: Optional[str] = None
+    application_deadline: Optional[date] = None
 
 class JobResponse(BaseModel):
     id: int
     title: str
-    description: str
+    location: str
+    work_mode: str
+    employment_type: str
+    min_experience: float
+    max_experience: float
     required_skills: str
-    location: Optional[str]
+    preferred_skills: Optional[str]
+    education_requirement: Optional[str]
+    salary_min: Optional[float]
+    salary_max: Optional[float]
+    openings: Optional[int]
+    description: Optional[str]
+    application_deadline: Optional[date]
     created_at: datetime
 
     class Config:
