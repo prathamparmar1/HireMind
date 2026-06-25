@@ -30,3 +30,8 @@ export const getRankedCandidates = async (jobId) => {
   const response = await apiClient.get(`/resumes/ranked/${jobId}`);
   return response.data;
 };
+
+export const getPendingCandidates = async (jobId) => {
+  const response = await apiClient.get(`/resumes/pending/${jobId}`);
+  return response.data;
+};
