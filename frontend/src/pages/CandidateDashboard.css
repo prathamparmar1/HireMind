@@ -1,0 +1,527 @@
+.dashboard-page {
+  --bg: #0B0F14;
+  --surface: #151B23;
+  --surface-2: #1B2430;
+
+  --border: #273244;
+  --border-strong: #334155;
+
+  --signal: #10B981;
+  --signal-soft: rgba(16,185,129,0.12);
+
+  --high: #10B981;
+  --high-soft: rgba(16,185,129,0.12);
+
+  --mid: #F59E0B;
+  --mid-soft: rgba(245,158,11,0.12);
+
+  --low: #EF4444;
+  --low-soft: rgba(239,68,68,0.12);
+
+  --text: #F8FAFC;
+  --text-dim: #CBD5E1;
+  --text-muted: #94A3B8;
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Plus Jakarta Sans", -apple-system, sans-serif;
+  min-height: 100vh;
+  padding: 3rem 2rem 5rem;
+}
+
+.dashboard-page * {
+  box-sizing: border-box;
+}
+
+.dashboard-page .eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin: 0 0 0.5rem;
+  font-weight: 500;
+}
+
+/* JOB HEADER */
+.dashboard-job-header {
+  max-width: 1080px;
+  margin: 0 auto 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+
+.job-header-main h1 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.85rem;
+}
+
+.job-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.meta-pill {
+  font-size: 0.76rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  padding: 0.28rem 0.65rem;
+  border-radius: 12px;
+}
+
+.meta-pill.muted {
+  color: var(--text-muted);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.dashboard-page .btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease;
+}
+
+.dashboard-page .btn-secondary:hover {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.dashboard-page .btn-primary {
+  background: var(--signal);
+  color: #06281D;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dashboard-page .btn-large {
+  padding: 0.85rem 1.6rem;
+  font-size: 0.95rem;
+}
+
+/* LOADING / ERROR */
+.dashboard-loading {
+  max-width: 1080px;
+  margin: 3rem auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: center;
+  color: var(--text-dim);
+}
+
+.pipeline-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--signal);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.dashboard-error {
+  max-width: 1080px;
+  margin: 0 auto;
+  color: var(--low);
+  background: var(--low-soft);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.88rem;
+}
+
+/* DISTRIBUTION CARD */
+.distribution-card {
+  max-width: 1080px;
+  margin: 0 auto 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+}
+
+.distribution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.85rem;
+}
+
+.distribution-title {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.distribution-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.distribution-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.distribution-segment {
+  transition: width 0.4s ease;
+}
+
+.seg-high { background: var(--high); }
+.seg-mid { background: var(--mid); }
+.seg-low { background: var(--low); }
+
+/* CONTROLS */
+.dashboard-controls {
+  max-width: 1080px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tier-pills {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.tier-pill {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tier-pill:hover {
+  border-color: var(--text-dim);
+}
+
+.tier-pill.active {
+  background: var(--signal-soft);
+  border-color: var(--signal);
+  color: var(--signal);
+  font-weight: 500;
+}
+
+.tier-pill.tier-high.active {
+  background: var(--high-soft);
+  border-color: var(--high);
+  color: var(--high);
+}
+
+.tier-pill.tier-mid.active {
+  background: var(--mid-soft);
+  border-color: var(--mid);
+  color: var(--mid);
+}
+
+.tier-pill.tier-low.active {
+  background: var(--low-soft);
+  border-color: var(--low);
+  color: var(--low);
+}
+
+.sort-select {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--signal);
+}
+
+/* CANDIDATE LIST */
+.candidate-list {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.candidate-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.candidate-card.is-expanded {
+  border-color: var(--border-strong);
+}
+
+.candidate-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+}
+
+.candidate-rank {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 1.75rem;
+  flex-shrink: 0;
+}
+
+.candidate-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.candidate-basic-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.candidate-basic-info h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.candidate-email {
+  margin: 0.15rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidate-top-skills {
+  display: none;
+  gap: 0.35rem;
+}
+
+.mini-chip {
+  font-size: 0.72rem;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  padding: 0.2rem 0.55rem;
+  border-radius: 10px;
+  font-family: "JetBrains Mono", monospace;
+  white-space: nowrap;
+}
+
+.candidate-score {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.score-high { background: var(--high-soft); color: var(--high); }
+.score-mid { background: var(--mid-soft); color: var(--mid); }
+.score-low { background: var(--low-soft); color: var(--low); }
+
+.expand-toggle {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  width: 1.5rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* DETAILS */
+.candidate-card-details {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.detail-grid.two-col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.detail-section h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.detail-section p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+}
+
+.detail-section ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.detail-section li {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.detail-section.reasoning li {
+  color: var(--text);
+}
+
+.detail-empty {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.detail-empty.good {
+  color: var(--high);
+  font-style: normal;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.skill-tag {
+  background: var(--signal-soft);
+  color: var(--signal);
+  padding: 0.25rem 0.6rem;
+  border-radius: 14px;
+  font-size: 0.82rem;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.skill-tag.missing {
+  background: var(--low-soft);
+  color: var(--low);
+}
+
+/* EMPTY STATES */
+.empty-state {
+  max-width: 480px;
+  margin: 4rem auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.empty-state.small {
+  margin: 2.5rem auto;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.empty-icon {
+  font-size: 2rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.empty-state p {
+  color: var(--text-dim);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 0.75rem;
+}
+
+/* RESPONSIVE */
+@media (min-width: 760px) {
+  .candidate-top-skills {
+    display: flex;
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-job-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .detail-grid, .detail-grid.two-col {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .sort-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-page {
+    padding: 2rem 1.25rem 4rem;
+  }
+  .candidate-email {
+    display: none;
+  }
+}
