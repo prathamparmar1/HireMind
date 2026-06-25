@@ -60,3 +60,25 @@ def get_ranked_candidates(job_id: int, db: Session = Depends(get_db)):
     ).order_by(Candidate.match_score.desc()).all()
 
     return candidates
+
+@router.get("/pending/{job_id}")
+def get_pending_candidates(job_id: int, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    not_extracted = db.query(Candidate).filter(
+        Candidate.job_id == job_id,
+        Candidate.extracted_skills.is_(None)
+    ).count()
+
+    extracted_not_matched = db.query(Candidate).filter(
+        Candidate.job_id == job_id,
+        Candidate.extracted_skills.isnot(None),
+        Candidate.match_score.is_(None)
+    ).count()
+
+    return {
+        "not_extracted": not_extracted,
+        "extracted_not_matched": extracted_not_matched,
+    }
