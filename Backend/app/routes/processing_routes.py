@@ -12,13 +12,19 @@ from app.agents.matching_agent import match_candidate_to_job
 from app.schemas import CandidateResponse
 
 router = APIRouter(prefix="/processing", tags=["Processing"])
+from app.schemas import CandidateIdsRequest
 
 @router.post("/extract/{job_id}", response_model=List[CandidateResponse])
-def extract_candidates(job_id: int, db: Session = Depends(get_db)):
-    candidates = db.query(Candidate).filter(
+def extract_candidates(job_id: int, payload: CandidateIdsRequest = None, db: Session = Depends(get_db)):
+    query = db.query(Candidate).filter(
         Candidate.job_id == job_id,
         Candidate.extracted_skills.is_(None)
-    ).all()
+    )
+
+    if payload and payload.candidate_ids:
+        query = query.filter(Candidate.id.in_(payload.candidate_ids))
+
+    candidates = query.all()
 
     if not candidates:
         raise HTTPException(status_code=404, detail="No unprocessed candidates found for this job")
@@ -52,23 +58,28 @@ def extract_candidates(job_id: int, db: Session = Depends(get_db)):
     if not processed and failed_ids:
         raise HTTPException(
             status_code=502,
-            detail=f"All extractions failed. Candidate IDs: {failed_ids}. Try again in a minute."
+            detail=f"All extractions failed. Candidate IDs: {failed_ids}. Try again later."
         )
 
     return processed
 
 
 @router.post("/match/{job_id}", response_model=List[CandidateResponse])
-def match_candidates(job_id: int, db: Session = Depends(get_db)):
+def match_candidates(job_id: int, payload: CandidateIdsRequest = None, db: Session = Depends(get_db)):
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    candidates = db.query(Candidate).filter(
+    query = db.query(Candidate).filter(
         Candidate.job_id == job_id,
         Candidate.extracted_skills.isnot(None),
         Candidate.match_score.is_(None)
-    ).all()
+    )
+
+    if payload and payload.candidate_ids:
+        query = query.filter(Candidate.id.in_(payload.candidate_ids))
+
+    candidates = query.all()
 
     if not candidates:
         raise HTTPException(status_code=404, detail="No candidates ready for matching. Run extraction first.")
@@ -110,7 +121,7 @@ def match_candidates(job_id: int, db: Session = Depends(get_db)):
     if not processed and failed_ids:
         raise HTTPException(
             status_code=502,
-            detail=f"All matches failed. Candidate IDs: {failed_ids}. Try again in a minute."
+            detail=f"All matches failed. Candidate IDs: {failed_ids}. Try again later."
         )
 
     return processed

@@ -82,3 +82,15 @@ def get_pending_candidates(job_id: int, db: Session = Depends(get_db)):
         "not_extracted": not_extracted,
         "extracted_not_matched": extracted_not_matched,
     }
+    
+@router.get("/all/{job_id}", response_model=List[CandidateResponse])
+def get_all_candidates_for_job(job_id: int, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    candidates = db.query(Candidate).filter(
+        Candidate.job_id == job_id
+    ).order_by(Candidate.id.asc()).all()
+
+    return candidates

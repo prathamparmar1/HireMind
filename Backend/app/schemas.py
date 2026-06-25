@@ -72,3 +72,6 @@ class JobListItem(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CandidateIdsRequest(BaseModel):
+    candidate_ids: List[int]
