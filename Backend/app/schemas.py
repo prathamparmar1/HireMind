@@ -55,3 +55,20 @@ class CandidateResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+class JobListItem(BaseModel):
+    id: int
+    title: str
+    location: str
+    work_mode: str
+    employment_type: str
+    min_experience: float
+    max_experience: float
+    required_skills: str
+    created_at: datetime
+    candidate_count: int
+    avg_score: Optional[float] = None
+    top_score: Optional[float] = None
+
+    class Config:
+        from_attributes = True
