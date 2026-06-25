@@ -35,3 +35,22 @@ export const getPendingCandidates = async (jobId) => {
   const response = await apiClient.get(`/resumes/pending/${jobId}`);
   return response.data;
 };
+
+export const getAllCandidatesForJob = async (jobId) => {
+  const response = await apiClient.get(`/resumes/all/${jobId}`);
+  return response.data;
+};
+
+export const extractSpecificCandidates = async (jobId, candidateIds) => {
+  const response = await apiClient.post(`/processing/extract/${jobId}`, {
+    candidate_ids: candidateIds,
+  });
+  return response.data;
+};
+
+export const matchSpecificCandidates = async (jobId, candidateIds) => {
+  const response = await apiClient.post(`/processing/match/${jobId}`, {
+    candidate_ids: candidateIds,
+  });
+  return response.data;
+};

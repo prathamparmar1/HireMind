@@ -1,3 +1,5 @@
+@import "../components/PipelineManager.css";
+
 .dashboard-page {
   --bg: #0B0F14;
   --surface: #151B23;
@@ -352,18 +354,30 @@
 }
 
 .candidate-score {
-  font-family: "JetBrains Mono", monospace;
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.3rem 0.75rem;
-  border-radius: 20px;
+  font-family: "JetBrains Mono", monospace !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  padding: 0.3rem 0.75rem !important;
+  border-radius: 20px !important;
   flex-shrink: 0;
+  display: inline-block;
+  line-height: 1.3;
 }
 
-.score-high { background: var(--high-soft); color: var(--high); }
-.score-mid { background: var(--mid-soft); color: var(--mid); }
-.score-low { background: var(--low-soft); color: var(--low); }
+.candidate-score.score-high {
+  background: var(--high-soft) !important;
+  color: var(--high) !important;
+}
 
+.candidate-score.score-mid {
+  background: var(--mid-soft) !important;
+  color: var(--mid) !important;
+}
+
+.candidate-score.score-low {
+  background: var(--low-soft) !important;
+  color: var(--low) !important;
+}
 .expand-toggle {
   color: var(--text-muted);
   font-size: 1.2rem;

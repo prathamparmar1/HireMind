@@ -1,8 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getRankedCandidates } from "../api/candidates";
 import { getJobById } from "../api/jobs";
 import "./CandidateDashboard.css";
+import PipelineManager from "../components/PipelineManager";
+import {
+  getRankedCandidates,
+  getAllCandidatesForJob,
+  extractSpecificCandidates,
+  matchSpecificCandidates,
+} from "../api/candidates";
 
 function scoreTier(score) {
   if (score >= 80) return "high";
@@ -132,27 +138,60 @@ function CandidateDashboard() {
   const [expandedId, setExpandedId] = useState(null);
   const [tierFilter, setTierFilter] = useState("all");
   const [sortBy, setSortBy] = useState("score");
+  const [allCandidates, setAllCandidates] = useState([]);
+  const [processingPipeline, setProcessingPipeline] = useState(false);
+  const [pipelineMessage, setPipelineMessage] = useState("");
 
   useEffect(() => {
     loadData();
   }, [jobId]);
 
   const loadData = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const [jobData, candidatesData] = await Promise.all([
-        getJobById(jobId),
-        getRankedCandidates(jobId),
-      ]);
-      setJob(jobData);
-      setCandidates(candidatesData);
-    } catch (err) {
-      setError("Could not load candidates. Try processing resumes first.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError("");
+  try {
+    const [jobData, candidatesData, allCandidatesData] = await Promise.all([
+      getJobById(jobId),
+      getRankedCandidates(jobId),
+      getAllCandidatesForJob(jobId),
+    ]);
+    setJob(jobData);
+    setCandidates(candidatesData);
+    setAllCandidates(allCandidatesData);
+  } catch (err) {
+    setError("Could not load candidates. Try processing resumes first.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleExtractSelected = async (candidateIds) => {
+  setProcessingPipeline(true);
+  setPipelineMessage(`Extracting ${candidateIds.length} candidate(s)...`);
+  try {
+    await extractSpecificCandidates(jobId, candidateIds);
+    setPipelineMessage("Extraction complete.");
+    await loadData();
+  } catch (err) {
+    setPipelineMessage("Extraction failed. Check quota or try again shortly.");
+  } finally {
+    setProcessingPipeline(false);
+  }
+};
+
+const handleMatchSelected = async (candidateIds) => {
+  setProcessingPipeline(true);
+  setPipelineMessage(`Matching ${candidateIds.length} candidate(s)...`);
+  try {
+    await matchSpecificCandidates(jobId, candidateIds);
+    setPipelineMessage("Matching complete.");
+    await loadData();
+  } catch (err) {
+    setPipelineMessage("Matching failed. Check quota or try again shortly.");
+  } finally {
+    setProcessingPipeline(false);
+  }
+};
 
   const tierCounts = useMemo(() => {
     const counts = { high: 0, mid: 0, low: 0 };
@@ -211,7 +250,7 @@ function CandidateDashboard() {
           <span className="empty-icon">⌗</span>
           <h2>No candidates yet</h2>
           <p>Upload resumes for this role to get a ranked shortlist with scores and reasoning.</p>
-          <button className="btn-primary btn-large" onClick={() => navigate(`/jobs/${jobId}/upload`)}>
+          <button className="btn-primary btn-large" style={{ marginLeft: "110px" }} onClick={() => navigate(`/jobs/${jobId}/upload`)}>
             Upload resumes
           </button>
         </div>
@@ -247,6 +286,15 @@ function CandidateDashboard() {
               )}
             </div>
           </div>
+          <PipelineManager
+            jobId={jobId}
+            allCandidates={allCandidates}
+            onExtract={handleExtractSelected}
+            onMatch={handleMatchSelected}
+            processing={processingPipeline}
+          />
+
+          {pipelineMessage && <p className="pipeline-manager-message">{pipelineMessage}</p>}
 
           <div className="dashboard-controls">
             <div className="tier-pills">
