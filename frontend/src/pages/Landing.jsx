@@ -165,10 +165,10 @@ function Landing() {
           </p>
           <div className="hero-actions">
             <button className="btn-primary btn-large" onClick={() => navigate("/create-job")}>
-              Try the demo
+              Create new post
             </button>
             <button className="btn-secondary btn-large" onClick={() => navigate("/jobs")}>
-              Watch product tour
+              Watch existing posts
             </button>
           </div>
         </div>
@@ -399,7 +399,7 @@ function Landing() {
             Get started
           </button>
           <button className="btn-secondary btn-large" onClick={() => navigate("/jobs")}>
-            Request a demo
+            Watch posts
           </button>
         </div>
       </section>

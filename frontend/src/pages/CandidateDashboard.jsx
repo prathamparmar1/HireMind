@@ -132,66 +132,80 @@ function CandidateDashboard() {
 
   const [job, setJob] = useState(null);
   const [candidates, setCandidates] = useState([]);
+  const [allCandidates, setAllCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [expandedId, setExpandedId] = useState(null);
   const [tierFilter, setTierFilter] = useState("all");
   const [sortBy, setSortBy] = useState("score");
-  const [allCandidates, setAllCandidates] = useState([]);
   const [processingPipeline, setProcessingPipeline] = useState(false);
   const [pipelineMessage, setPipelineMessage] = useState("");
+  const [reloadTrigger, setReloadTrigger] = useState(0);
 
   useEffect(() => {
+    let isCurrent = true;
+
+    const loadData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const [jobData, candidatesData, allCandidatesData] = await Promise.all([
+          getJobById(jobId),
+          getRankedCandidates(jobId),
+          getAllCandidatesForJob(jobId),
+        ]);
+
+        if (!isCurrent) return;
+
+        setJob(jobData);
+        setCandidates(candidatesData);
+        setAllCandidates(allCandidatesData);
+      } catch (err) {
+        if (isCurrent) {
+          setError("Could not load candidates. Try processing resumes first.");
+        }
+      } finally {
+        if (isCurrent) setLoading(false);
+      }
+    };
+
     loadData();
-  }, [jobId]);
 
-  const loadData = async () => {
-  setLoading(true);
-  setError("");
-  try {
-    const [jobData, candidatesData, allCandidatesData] = await Promise.all([
-      getJobById(jobId),
-      getRankedCandidates(jobId),
-      getAllCandidatesForJob(jobId),
-    ]);
-    setJob(jobData);
-    setCandidates(candidatesData);
-    setAllCandidates(allCandidatesData);
-  } catch (err) {
-    setError("Could not load candidates. Try processing resumes first.");
-  } finally {
-    setLoading(false);
-  }
-};
+    return () => {
+      isCurrent = false;
+    };
+  }, [jobId, reloadTrigger]);
 
-const handleExtractSelected = async (candidateIds) => {
-  setProcessingPipeline(true);
-  setPipelineMessage(`Extracting ${candidateIds.length} candidate(s)...`);
-  try {
-    await extractSpecificCandidates(jobId, candidateIds);
-    setPipelineMessage("Extraction complete.");
-    await loadData();
-  } catch (err) {
-    setPipelineMessage("Extraction failed. Check quota or try again shortly.");
-  } finally {
-    setProcessingPipeline(false);
-  }
-};
+  const refresh = () => setReloadTrigger((n) => n + 1);
 
-const handleMatchSelected = async (candidateIds) => {
-  setProcessingPipeline(true);
-  setPipelineMessage(`Matching ${candidateIds.length} candidate(s)...`);
-  try {
-    await matchSpecificCandidates(jobId, candidateIds);
-    setPipelineMessage("Matching complete.");
-    await loadData();
-  } catch (err) {
-    setPipelineMessage("Matching failed. Check quota or try again shortly.");
-  } finally {
-    setProcessingPipeline(false);
-  }
-};
+  const handleExtractSelected = async (candidateIds) => {
+    setProcessingPipeline(true);
+    setPipelineMessage(`Extracting ${candidateIds.length} candidate(s)...`);
+    try {
+      await extractSpecificCandidates(jobId, candidateIds);
+      setPipelineMessage("Extraction complete.");
+      refresh();
+    } catch (err) {
+      setPipelineMessage("Extraction failed. Check quota or try again shortly.");
+    } finally {
+      setProcessingPipeline(false);
+    }
+  };
+
+  const handleMatchSelected = async (candidateIds) => {
+    setProcessingPipeline(true);
+    setPipelineMessage(`Matching ${candidateIds.length} candidate(s)...`);
+    try {
+      await matchSpecificCandidates(jobId, candidateIds);
+      setPipelineMessage("Matching complete.");
+      refresh();
+    } catch (err) {
+      setPipelineMessage("Matching failed. Check quota or try again shortly.");
+    } finally {
+      setProcessingPipeline(false);
+    }
+  };
 
   const tierCounts = useMemo(() => {
     const counts = { high: 0, mid: 0, low: 0 };
@@ -212,7 +226,8 @@ const handleMatchSelected = async (candidateIds) => {
     return list;
   }, [candidates, tierFilter, sortBy]);
 
-  const total = candidates.length;
+  const rankedTotal = candidates.length;
+  const grandTotal = allCandidates.length;
 
   return (
     <div className="dashboard-page">
@@ -245,48 +260,56 @@ const handleMatchSelected = async (candidateIds) => {
 
       {error && <p className="dashboard-error">{error}</p>}
 
-      {!loading && !error && total === 0 && (
+      {/* Truly empty: no candidates uploaded at all for this job */}
+      {!loading && !error && grandTotal === 0 && (
         <div className="empty-state">
           <span className="empty-icon">⌗</span>
           <h2>No candidates yet</h2>
           <p>Upload resumes for this role to get a ranked shortlist with scores and reasoning.</p>
-          <button className="btn-primary btn-large" style={{ marginLeft: "110px" }} onClick={() => navigate(`/jobs/${jobId}/upload`)}>
+          <button className="btn-primary btn-large" onClick={() => navigate(`/jobs/${jobId}/upload`)}>
             Upload resumes
           </button>
         </div>
       )}
 
-      {!loading && !error && total > 0 && (
+      {/* Candidates exist (uploaded), even if none are ranked yet */}
+      {!loading && !error && grandTotal > 0 && (
         <>
-          <div className="distribution-card">
-            <div className="distribution-header">
-              <span className="distribution-title">{total} ranked candidate{total !== 1 ? "s" : ""}</span>
-              <span className="distribution-sub">
-                {tierCounts.high} strong · {tierCounts.mid} moderate · {tierCounts.low} weak
-              </span>
+          {rankedTotal > 0 && (
+            <div className="distribution-card">
+              <div className="distribution-header">
+                <span className="distribution-title">
+                  {rankedTotal} ranked candidate{rankedTotal !== 1 ? "s" : ""}
+                </span>
+                <span className="distribution-sub">
+                  {tierCounts.high} strong · {tierCounts.mid} moderate · {tierCounts.low} weak
+                </span>
+              </div>
+              <div className="distribution-bar">
+                {tierCounts.high > 0 && (
+                  <div
+                    className="distribution-segment seg-high"
+                    style={{ width: `${(tierCounts.high / rankedTotal) * 100}%` }}
+                  />
+                )}
+                {tierCounts.mid > 0 && (
+                  <div
+                    className="distribution-segment seg-mid"
+                    style={{ width: `${(tierCounts.mid / rankedTotal) * 100}%` }}
+                  />
+                )}
+                {tierCounts.low > 0 && (
+                  <div
+                    className="distribution-segment seg-low"
+                    style={{ width: `${(tierCounts.low / rankedTotal) * 100}%` }}
+                  />
+                )}
+              </div>
             </div>
-            <div className="distribution-bar">
-              {tierCounts.high > 0 && (
-                <div
-                  className="distribution-segment seg-high"
-                  style={{ width: `${(tierCounts.high / total) * 100}%` }}
-                />
-              )}
-              {tierCounts.mid > 0 && (
-                <div
-                  className="distribution-segment seg-mid"
-                  style={{ width: `${(tierCounts.mid / total) * 100}%` }}
-                />
-              )}
-              {tierCounts.low > 0 && (
-                <div
-                  className="distribution-segment seg-low"
-                  style={{ width: `${(tierCounts.low / total) * 100}%` }}
-                />
-              )}
-            </div>
-          </div>
+          )}
+
           <PipelineManager
+            key={jobId}
             jobId={jobId}
             allCandidates={allCandidates}
             onExtract={handleExtractSelected}
@@ -296,56 +319,66 @@ const handleMatchSelected = async (candidateIds) => {
 
           {pipelineMessage && <p className="pipeline-manager-message">{pipelineMessage}</p>}
 
-          <div className="dashboard-controls">
-            <div className="tier-pills">
-              <button
-                className={`tier-pill ${tierFilter === "all" ? "active" : ""}`}
-                onClick={() => setTierFilter("all")}
-              >
-                All ({total})
-              </button>
-              <button
-                className={`tier-pill tier-high ${tierFilter === "high" ? "active" : ""}`}
-                onClick={() => setTierFilter("high")}
-              >
-                Strong ({tierCounts.high})
-              </button>
-              <button
-                className={`tier-pill tier-mid ${tierFilter === "mid" ? "active" : ""}`}
-                onClick={() => setTierFilter("mid")}
-              >
-                Moderate ({tierCounts.mid})
-              </button>
-              <button
-                className={`tier-pill tier-low ${tierFilter === "low" ? "active" : ""}`}
-                onClick={() => setTierFilter("low")}
-              >
-                Weak ({tierCounts.low})
-              </button>
-            </div>
-
-            <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="score">Sort by score</option>
-              <option value="name">Sort by name</option>
-            </select>
-          </div>
-
-          {visibleCandidates.length === 0 ? (
+          {rankedTotal === 0 && (
             <div className="empty-state small">
-              <p>No candidates in this tier.</p>
+              <p>No candidates ranked yet. Use the processing queue above to extract and match them.</p>
             </div>
-          ) : (
-            <div className="candidate-list">
-              {visibleCandidates.map((candidate, index) => (
-                <CandidateCard
-                  key={candidate.id}
-                  candidate={candidate}
-                  rank={index + 1}
-                  expanded={expandedId === candidate.id}
-                  onToggle={() => setExpandedId(expandedId === candidate.id ? null : candidate.id)}
-                />
-              ))}
-            </div>
+          )}
+
+          {rankedTotal > 0 && (
+            <>
+              <div className="dashboard-controls">
+                <div className="tier-pills">
+                  <button
+                    className={`tier-pill ${tierFilter === "all" ? "active" : ""}`}
+                    onClick={() => setTierFilter("all")}
+                  >
+                    All ({rankedTotal})
+                  </button>
+                  <button
+                    className={`tier-pill tier-high ${tierFilter === "high" ? "active" : ""}`}
+                    onClick={() => setTierFilter("high")}
+                  >
+                    Strong ({tierCounts.high})
+                  </button>
+                  <button
+                    className={`tier-pill tier-mid ${tierFilter === "mid" ? "active" : ""}`}
+                    onClick={() => setTierFilter("mid")}
+                  >
+                    Moderate ({tierCounts.mid})
+                  </button>
+                  <button
+                    className={`tier-pill tier-low ${tierFilter === "low" ? "active" : ""}`}
+                    onClick={() => setTierFilter("low")}
+                  >
+                    Weak ({tierCounts.low})
+                  </button>
+                </div>
+
+                <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                  <option value="score">Sort by score</option>
+                  <option value="name">Sort by name</option>
+                </select>
+              </div>
+
+              {visibleCandidates.length === 0 ? (
+                <div className="empty-state small">
+                  <p>No candidates in this tier.</p>
+                </div>
+              ) : (
+                <div className="candidate-list">
+                  {visibleCandidates.map((candidate, index) => (
+                    <CandidateCard
+                      key={candidate.id}
+                      candidate={candidate}
+                      rank={index + 1}
+                      expanded={expandedId === candidate.id}
+                      onToggle={() => setExpandedId(expandedId === candidate.id ? null : candidate.id)}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </>
       )}
