@@ -140,7 +140,7 @@ function Landing() {
           </div>
           <div className="nav-actions">
             <button className="btn-ghost" onClick={() => navigate("/jobs")}>
-              Log in
+              Jobs
             </button>
             <button className="btn-primary" onClick={() => navigate("/create-job")}>
               Get started
