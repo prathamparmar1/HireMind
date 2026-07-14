@@ -17,14 +17,20 @@ frontend_url = os.getenv("FRONTEND_URL")
 if frontend_url:
     allowed_origins.append(frontend_url)
 
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=allowed_origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 Base.metadata.create_all(bind=engine)
 
 app.include_router(job_routes.router)
