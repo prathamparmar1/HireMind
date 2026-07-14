@@ -12,11 +12,15 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Base = declarative_base()
 
-connect_args = {}
-if DATABASE_URL and "neon.tech" in DATABASE_URL:
-    connect_args = {"sslmode": "require"}
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=300,
+    pool_size=5,
+    max_overflow=2,
+    connect_args={"sslmode": "require"} if DATABASE_URL and "neon.tech" in DATABASE_URL else {}
+)
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
