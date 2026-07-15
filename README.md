@@ -2,7 +2,7 @@
 
 > Upload resumes and a job description. HireMind extracts every candidate profile, scores applicants against the role, identifies skill gaps, and surfaces your strongest matches — automatically.
 
-**Live Demo:** [hiremind.vercel.app](https://your-vercel-url.vercel.app) &nbsp;·&nbsp; **Backend API:** [API Docs](https://your-render-url.onrender.com/docs)
+**Live Demo:** [hiremind.vercel.app](https://hire-mind-xi.vercel.app/) &nbsp;&nbsp; 
 
 ---
 
